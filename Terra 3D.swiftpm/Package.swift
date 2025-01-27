@@ -8,19 +8,19 @@ import PackageDescription
 import AppleProductTypes
 
 let package = Package(
-    name: "My App",
+    name: "Terra 3D",
     platforms: [
         .iOS("17.5")
     ],
     products: [
         .iOSApplication(
-            name: "My App",
+            name: "Terra 3D",
             targets: ["AppModule"],
             bundleIdentifier: "com.Terra.Terra-3D",
             teamIdentifier: "GY6TJ735MA",
             displayVersion: "1.0",
             bundleVersion: "1",
-            appIcon: .placeholder(icon: .twoPeople),
+            appIcon: .placeholder(icon: .rocket),
             accentColor: .presetColor(.indigo),
             supportedDeviceFamilies: [
                 .pad,

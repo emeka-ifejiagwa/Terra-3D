@@ -1,10 +1,11 @@
 import SwiftUI
 
 @main
-struct MyApp: App {
+struct Terra3D: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+//            ContentView()
+            PerlinNoiseVisualizer()
         }
     }
 }

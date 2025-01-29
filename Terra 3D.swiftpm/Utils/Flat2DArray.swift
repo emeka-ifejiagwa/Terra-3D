@@ -6,6 +6,7 @@
 //
 import CoreGraphics
 
+/// This struct simplifies the process of working with 1D arrays as though they are 2D
 struct Flat2DArray<Element> {
     // ideally private but we need this for the accelerate package
     var array: [Element]

@@ -9,7 +9,7 @@ fileprivate let maxPerlinValue: Float = 1.0
 fileprivate let minPerlinValue: Float = -1.0
 fileprivate let maxColorVal: Float = 255.0
 
-struct PerlinNormalizer {
+struct NoiseNormalizer {
     
     static let colorNormalization: (Float) -> Float = createZeroToValueNormalization(maxColorVal)
     

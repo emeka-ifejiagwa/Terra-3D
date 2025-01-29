@@ -5,7 +5,7 @@ struct Terra3D: App {
     var body: some Scene {
         WindowGroup {
 //            ContentView()
-            PerlinNoiseVisualizer()
+            NoiseVisualizer()
         }
     }
 }

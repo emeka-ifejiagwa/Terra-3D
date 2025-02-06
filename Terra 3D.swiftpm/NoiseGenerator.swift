@@ -1,14 +1,11 @@
 //
 //  NoiseMap.swift
-//  My App
+//  Terra 3D
 //
 //  Created by Jiexy on 1/25/25.
 //
 
 import GameplayKit
-
-// NOTE: It seems that when obtaining values from the noise map, either the x-coordinate or the y-coordinate have to be less than 99
-let maxPerlinIndex = 90
 
 /// This class will be inherited by other noise generators that provide their own noise sources
 class NoiseGenerator {
@@ -25,6 +22,7 @@ class NoiseGenerator {
     }
     
     /// This function generates the actual noise map
+    /// Parameters follow Apple Documentation
     func generateNoiseMap(noiseHeight: Double =  1.0, noiseWidth: Double = 1.0, origin: CGPoint = CGPoint(x: 0, y: 0), sampleCount: (x: Int, y: Int)? = nil, seamless: Bool = true) -> GKNoiseMap {
         if sampleCount != nil {
             self.sampleCount = vector_int2(x: Int32(sampleCount!.x), y: Int32(sampleCount!.y ))
@@ -41,20 +39,23 @@ class NoiseGenerator {
     ///   - size: The  height and width of the terrain that the noise map is intended for
     ///   - normalizationFunc: The function used to normalize all values in the final result. If not provided, no normalization is applied
     /// - Returns: Returns a final perlin based noise array after  normalization
-    static func fillMap<N: Numeric>(from noiseMap: GKNoiseMap,
-                     scaleBy scaleFactor: Float = 1.0,
-                     size: (height: Int, width: Int)?,
-                     withNormalization normalizationFunc: @escaping (Float) -> N = NoiseNormalizer.unNormalized
+    static func fillMap<N: Numeric>(
+        from noiseMap: GKNoiseMap,
+        scaleBy scaleFactor: Float = 1.0,
+        size: (height: Int, width: Int)?,
+        with normalizationFunc: (Float) -> N = NoiseNormalizer.identityNormalizer
     ) -> Flat2DArray<N> {
         let size = size ?? (height: Int(noiseMap.size.x), width: Int(noiseMap.size.y))
         // the adjustedScaleFactor is to accommodate scales that cause issues
         // because the map size is smaller than the generated perlin map
         // Assumption: the x-count = y-count
+        // changing both to doubles ensures that we do not lose any info
+        // as a result of integer division
         let adjustedScaleFactor = Float(Double(size.height) / Double(noiseMap.sampleCount.x))
         // scale should not be smaller than 1
         let scale: Float = (scaleFactor < 1 ? 1 : scaleFactor) * adjustedScaleFactor
         var resMap = Flat2DArray<N>(repeating: 0, height: size.height, width: size.width)
-
+        
         for x in 0..<size.height {
             for y in 0..<size.width {
                 let scaledX = Float(x) / scale
@@ -64,12 +65,33 @@ class NoiseGenerator {
         }
         return resMap
     }
+    
 }
 
 class PerlinNoiseGenerator: NoiseGenerator {
-    
     init(frequency: Double = 2, octaveCount: Int = 6, persistence: Double = 0.5, lacunarity: Double = 2, seed: Int32 = 0){
         let noiseSource = GKPerlinNoiseSource(frequency: frequency,
+                                              octaveCount: octaveCount,
+                                              persistence: persistence,
+                                              lacunarity: lacunarity,
+                                              seed: seed)
+        super.init(noiseSource: noiseSource)
+    }
+}
+
+class RidgedNoiseGenerator: NoiseGenerator {
+    init(frequency: Double = 2, octaveCount: Int = 6, lacunarity: Double = 2, seed: Int32 = 0){
+        let noiseSource = GKRidgedNoiseSource(frequency: frequency,
+                                              octaveCount: octaveCount,
+                                              lacunarity: lacunarity,
+                                              seed: seed)
+        super.init(noiseSource: noiseSource)
+    }
+}
+
+class BillowNoiseGenerator: NoiseGenerator {
+    init(frequency: Double = 2, octaveCount: Int = 6, persistence: Double = 0.5, lacunarity: Double = 2, seed: Int32 = 0){
+        let noiseSource = GKBillowNoiseSource(frequency: frequency,
                                               octaveCount: octaveCount,
                                               persistence: persistence,
                                               lacunarity: lacunarity,

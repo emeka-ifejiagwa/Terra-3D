@@ -10,7 +10,7 @@ import AppleProductTypes
 let package = Package(
     name: "Terra 3D",
     platforms: [
-        .iOS("17.5")
+        .iOS("18.1")
     ],
     products: [
         .iOSApplication(
@@ -31,6 +31,9 @@ let package = Package(
                 .landscapeRight,
                 .landscapeLeft,
                 .portraitUpsideDown(.when(deviceFamilies: [.pad]))
+            ],
+            capabilities: [
+                .camera(purposeString: "Terra 3D uses your camera to detect and map your surroundings, allowing you to seamlessly integrate our environmental simulation into your real-world space")
             ]
         )
     ],

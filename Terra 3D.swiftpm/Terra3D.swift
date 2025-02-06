@@ -5,7 +5,8 @@ struct Terra3D: App {
     var body: some Scene {
         WindowGroup {
 //            ContentView()
-            NoiseVisualizer()
+//            NoiseVisualizer()
+            TerrainTextureVisualizer()
         }
     }
 }

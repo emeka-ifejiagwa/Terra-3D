@@ -14,10 +14,3 @@ func getFlatIndex(x: Int, y: Int, width: Int) -> Int {
 func get2DIndex(flatIndex: Int, width: Int){
     
 }
-
-struct Pixel {
-    var r: UInt8
-    var g: UInt8
-    var b: UInt8
-    var a: UInt8
-}

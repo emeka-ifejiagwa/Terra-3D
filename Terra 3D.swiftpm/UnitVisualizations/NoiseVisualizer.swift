@@ -5,6 +5,7 @@
 //  Created by Jiexy on 1/26/25.
 //
 //  Primarily for visual feedback. Should not be reachable from any other view
+// Code content could be improved but it is not a primary concern
 
 import SwiftUI
 import CoreGraphics
@@ -20,11 +21,11 @@ struct NoiseVisualizer: View {
     @State var noiseHeight: Double = 1.0
     @State var noiseWidth: Double = 1.0
     @State var seamless = true
-    // Double for the slider
+    // Double for the slider. Ideally ints
     @State var octaveCount = 6.0
     @State var sampleCountX = 100.0
     @State var sampleCountY = 100.0
-    var noiseGenerator: PerlinNoiseGenerator {
+    var noiseGenerator: NoiseGenerator {
         return PerlinNoiseGenerator(
             frequency: frequency,
             octaveCount: Int(octaveCount),
@@ -87,7 +88,7 @@ struct NoiseVisualizer: View {
             sampleCount: (x: Int(sampleCountX), y: Int(sampleCountY)),
             seamless: seamless
         )
-        let imageMap = NoiseGenerator.fillMap(from: noiseMap, scaleBy: scale, size: testSize, withNormalization: NoiseNormalizer.colorNormalization)
+        let imageMap = NoiseGenerator.fillMap(from: noiseMap, scaleBy: scale, size: testSize, with: NoiseNormalizer.colorNormalizer)
         // we need the colors to be integers
         let grayColorMap = imageMap.map { value in
             UInt8(value)

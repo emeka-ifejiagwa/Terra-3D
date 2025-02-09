@@ -1,5 +1,6 @@
 import SwiftUI
 import RealityKit
+import ARKit
 
 // FIXME: modify this code after AR proof of concept
 struct ARViewContainer: UIViewRepresentable {
@@ -8,20 +9,22 @@ struct ARViewContainer: UIViewRepresentable {
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero, cameraMode: .ar, automaticallyConfigureSession: true)
         
-        // for testing purposes
-        let waterMesh = MeshResource.generateBox(size: 0.2)
-        let waterMaterial = SimpleMaterial(color: .cyan, roughness: 0.5, isMetallic: true)
-        let water = ModelEntity(mesh: waterMesh, materials: [waterMaterial])
-        water.components[OpacityComponent.self] = .init(opacity: 0.5)
+        // configure rendering options
+        arView.renderOptions.remove(.disableCameraGrain)
+        arView.renderOptions.remove(.disableGroundingShadows)
+        arView.renderOptions.remove(.disablePersonOcclusion)
         
         let anchor = AnchorEntity(plane: .horizontal)
-        anchor.addChild(water)
+        let terrain = TerrainMesh()
+        anchor.addChild(terrain)
+        
+        
         arView.scene.addAnchor(anchor)
         
         // Set debug options: Comment out due to uncertainty of the judging process
-//        #if DEBUG
-//        arView.debugOptions = [.showFeaturePoints, .showAnchorOrigins, .showAnchorGeometry, .showWorldOrigin, .showSceneUnderstanding]
-//        #endif
+        //        #if DEBUG
+        //        arView.debugOptions = [.showFeaturePoints, .showAnchorOrigins, .showAnchorGeometry, .showWorldOrigin, .showSceneUnderstanding]
+        //        #endif
         return arView
     }
     

@@ -7,6 +7,7 @@
 
 import CoreGraphics
 import SwiftUI
+import Accelerate
 
 struct TerrainTextureGenerator {
     
@@ -44,26 +45,17 @@ struct TerrainTextureGenerator {
         return colorMap
     }
     
-    static func generateImage(colorMap: Flat2DArray<UInt8>, size: CGSize) -> UIImage? {
+    static func generateImage(colorMap: Flat2DArray<UInt8>, size: CGSize, blurRadius: Int = 1) -> UIImage? {
+        let sourceBuffer = vImage.PixelBuffer(pixelValues: colorMap.array, size: vImage.Size(exactly: size) ?? vImage.Size(width: Int(size.width), height: Int(size.height)), pixelFormat: vImage.Interleaved8x4.self)
+        // to potentially smooth out transitions
+        let destinationBuffer = sourceBuffer.tentConvolved(kernelSize: vImage.Size(width: blurRadius, height: blurRadius), edgeMode: .extend)
+        
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue) // RGBA not ARGB
-        guard let provider = CGDataProvider(data: Data(colorMap) as CFData) else {
-            return nil
-        }
-        let width = Int(size.width)
-        let height = Int(size.height)
-        guard let cgImage = CGImage(width: width,
-                                    height: height,
-                                    bitsPerComponent: 8,
-                                    bitsPerPixel: 32,
-                                    bytesPerRow: width * 4,
-                                    space: colorSpace,
-                                    bitmapInfo: bitmapInfo,
-                                    provider: provider,
-                                    decode: nil,
-                                    shouldInterpolate: true,
-                                    intent: .defaultIntent)
-        else {
+        
+        guard let cgImage = destinationBuffer.makeCGImage(cgImageFormat: vImage_CGImageFormat(
+            bitsPerComponent: 8, bitsPerPixel: 32, colorSpace: colorSpace, bitmapInfo: bitmapInfo
+        )!) else {
             return nil
         }
         return UIImage(cgImage: cgImage)
@@ -72,9 +64,10 @@ struct TerrainTextureGenerator {
     static func generateTexture(heightMap: Flat2DArray<Float>,
                                 temperatureMap: Flat2DArray<Float>,
                                 humidityMap: Flat2DArray<Float>,
-                                size: CGSize
+                                size: CGSize,
+                                blurRadius: Int = 1
     ) -> UIImage? {
         let colorMap = generateTextureMap(heightMap: heightMap, temperatureMap: temperatureMap, humidityMap: humidityMap, size: size)
-        return generateImage(colorMap: colorMap, size: size)
+        return generateImage(colorMap: colorMap, size: size, blurRadius: blurRadius)
     }
 }

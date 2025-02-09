@@ -37,9 +37,12 @@ let BiomeColorMap : [Biome : SIMD_RGBA] = [
     .deepOcean : SIMD_RGBA(x: 0, y: 0, z: 112, w: 255),
     .shallowOcean : SIMD_RGBA(x: 48, y: 48, z: 175, w: 255),
     .temperateForest : SIMD_RGBA(x: 98, y: 139, z: 23, w: 255),
-    .tropicalForest : SIMD_RGBA(x: 5, y: 102, z: 33, w: 255),
-    .borealForest : SIMD_RGBA(x: 11, y: 102, z: 89, w: 255),
-    .woodland : SIMD_RGBA(x: 255, y: 140, z: 1, w: 255),
+//    .temperateForest : SIMD_RGBA(x: 48, y: 116, z: 68, w: 255),
+    .tropicalForest : SIMD_RGBA(x: 98, y: 139, z: 23, w: 255),
+//    .tropicalForest : SIMD_RGBA(x: 5, y: 102, z: 33, w: 255),
+    .borealForest : SIMD_RGBA(x: 98, y: 139, z: 23, w: 255),
+//    .borealForest : SIMD_RGBA(x: 11, y: 102, z: 89, w: 255),
+//    .grassLand : SIMD_RGBA(x: 98, y: 139, z: 23, w: 255),
     .grassLand : SIMD_RGBA(x: 141, y: 179, z: 96, w: 255),
 ]
 
@@ -47,11 +50,11 @@ enum Temperature: CaseIterable, Equatable {
     case freezing, cold, moderate, warm, hot
     
     private enum TempBoundary {
-        static let freezingStart = Float(-1) // Not used in init but here as a good reference for ideal start
-        static let coldStart = Float(-0.6)
-        static let moderateStart = Float(-0.2)
-        static let warmStart = Float(0.25)
-        static let hotStart = Float(0.75)
+        static let freezingStart = Float(0) // Not used in init but here as a good reference for ideal start
+        static let coldStart = Float(0.15)
+        static let moderateStart = Float(0.3)
+        static let warmStart = Float(0.6)
+        static let hotStart = Float(0.8)
     }
     
     init(_ value: Float) {
@@ -72,14 +75,17 @@ enum Temperature: CaseIterable, Equatable {
 
 enum Altitude: CaseIterable, Equatable {
     case deep, shallow, beach, land, mountain, peak
-    
+    /**
+     Observation: Using PerlinNoiseGenerator and absNormalizer causes much more oceans than
+     the start for all oceans may represent
+     */
     private enum AltBoundary {
-        static let deepStart = Float(-1) // Not used in init but here as a good reference for ideal start
-        static let shallowStart = Float(-0.7)
-        static let beachStart = Float(-0.5)
-        static let landStart = Float(-0.4)
-        static let mountainStart = Float(0.6)
-        static let peakStart = Float(0.9)
+        static let deepStart = Float(0) // Not used in init but here as a good reference for ideal start
+        static let shallowStart = Float(0.1)
+        static let beachStart = Float(0.15)
+        static let landStart = Float(0.225)
+        static let mountainStart = Float(0.75)
+        static let peakStart = Float(0.95)
     }
     
     init(_ value: Float) {
@@ -104,10 +110,10 @@ enum Humidity: CaseIterable, Equatable {
     case low, normal, high, veryHigh
     
     private enum HConstant {
-        static let lowStart = Float(-1.0) // Not used in init but here as a good reference for ideal start
-        static let normalStart = Float(-0.3)
-        static let highStart = Float(0.3)
-        static let veryHighStart = Float(0.7)
+        static let lowStart = Float(0) // Not used in init but here as a good reference for ideal start
+        static let normalStart = Float(0.15)
+        static let highStart = Float(0.5)
+        static let veryHighStart = Float(0.75)
     }
     
     init(_ value: Float) {
@@ -142,21 +148,15 @@ struct BiomeConfig {
             case .moderate:
                 if humidity == .low {
                     return .grassLand
-                } else if humidity == .normal {
-                    return .woodland
                 } else{
                     return .temperateForest
                 }
             case .warm:
-                if humidity == .low {
-                    return .desert
-                } else {
-                    return .temperateForest
-                }
+                return .temperateForest
             case .hot:
                 if humidity == .low {
                     return .desert
-                } else if humidity == .normal || humidity == .high{
+                } else if humidity == .normal || humidity == .high {
                     return .savanna
                 } else {
                     return .tropicalForest

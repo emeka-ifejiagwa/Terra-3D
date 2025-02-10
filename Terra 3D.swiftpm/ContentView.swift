@@ -14,17 +14,22 @@ struct ARViewContainer: UIViewRepresentable {
         arView.renderOptions.remove(.disableGroundingShadows)
         arView.renderOptions.remove(.disablePersonOcclusion)
         
+//        let config = ARWorldTrackingConfiguration()
+//        config.worldAlignment = .camera
+//        arView.session.run(config, options: [.resetTracking, .removeExistingAnchors])
         let anchor = AnchorEntity(plane: .horizontal)
         let terrain = TerrainMesh()
+        terrain.position = .zero
         anchor.addChild(terrain)
         
         
         arView.scene.addAnchor(anchor)
         
         // Set debug options: Comment out due to uncertainty of the judging process
-        //        #if DEBUG
+#if DEBUG
         //        arView.debugOptions = [.showFeaturePoints, .showAnchorOrigins, .showAnchorGeometry, .showWorldOrigin, .showSceneUnderstanding]
-        //        #endif
+        arView.debugOptions = [.showWorldOrigin, .showFeaturePoints]
+#endif
         return arView
     }
     

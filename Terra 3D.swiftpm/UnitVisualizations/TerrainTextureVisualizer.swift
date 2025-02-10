@@ -5,11 +5,14 @@
 //  Created by Jiexy on 2/5/25.
 //
 
+// Code content could be improved but it is not a primary concern
+// Intended for visual feedback with preview
+
 import SwiftUI
 
 fileprivate let testSize = (height: 256, width: 256)
 
-struct TerrainTextureVisualizer: View {
+private struct TerrainTextureVisualizer: View {
     @State private var seed: Int32 = Int32.random(in: Int32.min..<Int32.max - 1)
 
     var heightMap: Flat2DArray<Float> {

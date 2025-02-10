@@ -4,15 +4,17 @@
 //
 //  Created by Jiexy on 1/26/25.
 //
-//  Primarily for visual feedback. Should not be reachable from any other view
+//  Primarily for visual feedback.
+
 // Code content could be improved but it is not a primary concern
+// Intended for visual feedback with preview
 
 import SwiftUI
 import CoreGraphics
 
 fileprivate let testSize = (height: 512, width: 512)
 
-struct NoiseVisualizer: View {
+private struct NoiseVisualizer: View {
     @State var frequency = 2.0
     @State var persistence = 0.5
     @State var lacunarity = 2.0

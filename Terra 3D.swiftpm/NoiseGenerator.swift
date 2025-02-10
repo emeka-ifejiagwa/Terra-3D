@@ -7,6 +7,8 @@
 
 import GameplayKit
 
+typealias CGSizeInt = (height: Int, width: Int)
+
 /// This class will be inherited by other noise generators that provide their own noise sources
 class NoiseGenerator {
     let noise: GKNoise
@@ -42,10 +44,9 @@ class NoiseGenerator {
     static func fillMap<N: Numeric>(
         from noiseMap: GKNoiseMap,
         scaleBy scaleFactor: Float = 1.0,
-        size: (height: Int, width: Int)?,
+        size: CGSizeInt,
         with normalizationFunc: (Float) -> N = NoiseNormalizer.identityNormalizer
     ) -> Flat2DArray<N> {
-        let size = size ?? (height: Int(noiseMap.size.x), width: Int(noiseMap.size.y))
         // the adjustedScaleFactor is to accommodate scales that cause issues
         // because the map size is smaller than the generated perlin map
         // Assumption: the x-count = y-count
@@ -96,6 +97,13 @@ class BillowNoiseGenerator: NoiseGenerator {
                                               persistence: persistence,
                                               lacunarity: lacunarity,
                                               seed: seed)
+        super.init(noiseSource: noiseSource)
+    }
+}
+
+class ConstantNoiseGenerator: NoiseGenerator {
+    init(value: Double){
+        let noiseSource = GKConstantNoiseSource(value: value)
         super.init(noiseSource: noiseSource)
     }
 }

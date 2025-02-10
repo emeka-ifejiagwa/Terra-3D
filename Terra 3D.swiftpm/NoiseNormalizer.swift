@@ -48,7 +48,30 @@ struct NoiseNormalizer {
         return abs(value)
     }
     
-    static let absColorNormalizer: NormalizerFunction = {value in
+    static let absColorNormalizer: NormalizerFunction = { value in
         return abs(value) * maxColorVal
+    }
+    
+    /// This function applies the smooth step function for values in the range [0,1]
+    /// For values less than 0 or greater than 1, it returns 0 and 1 respectively
+    /// See [Smooth Step Function in Wikipedia](https://en.wikipedia.org/wiki/Smoothstep)
+    // MARK: Consider replacing with [SIMD method](https://developer.apple.com/documentation/simd/simd_smoothstep(_:_:_:)-5839l)
+    static let smoothStepNormalizer: NormalizerFunction = { value in
+        if value <= 0 { return 0 }
+        if value >= 1 { return 1 }
+        return (value * value * (3 - 2 * value))
+    }
+    
+    /// This function applies the smooth step function for values in the range [-1,1]
+    /// For values less than 0 or greater than 1, it returns 0 and 1 respectively
+    /// See [Smooth Step Function in Wikipedia](https://en.wikipedia.org/wiki/Smoothstep)
+    /// See graph [on Desmos](https://www.desmos.com/calculator/i5qwuxlh2w)
+    ///
+    /// 3(0.5(x + 1))^2 - 2(0.5(x + 1))^3 => 0.75(x + 1)^2 - 0.25(x + 1)^3
+    static let noiseSmoothStepNormalizer: NormalizerFunction = { value in
+        if value <= -1 { return 0 }
+        if value >= 1 { return 1 }
+        let valuePlus1 = value + 1
+        return valuePlus1 * valuePlus1 * (0.75 - 0.25 * valuePlus1)
     }
 }

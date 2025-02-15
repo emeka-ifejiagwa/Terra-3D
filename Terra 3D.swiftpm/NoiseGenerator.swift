@@ -6,6 +6,7 @@
 //
 
 import GameplayKit
+import Foundation
 
 typealias CGSizeInt = (height: Int, width: Int)
 
@@ -56,9 +57,8 @@ class NoiseGenerator {
         // scale should not be smaller than 1
         let scale: Float = (scaleFactor < 1 ? 1 : scaleFactor) * adjustedScaleFactor
         var resMap = Flat2DArray<N>(repeating: 0, height: size.height, width: size.width)
-        
-        for x in 0..<size.height {
-            for y in 0..<size.width {
+        DispatchQueue.concurrentPerform(iterations: size.height) { x in
+            DispatchQueue.concurrentPerform(iterations:size.width) { y in
                 let scaledX = Float(x) / scale
                 let scaledY = Float(y) / scale
                 resMap[x,y] = normalizationFunc(noiseMap.interpolatedValue(at: vector_float2(scaledX, scaledY)))

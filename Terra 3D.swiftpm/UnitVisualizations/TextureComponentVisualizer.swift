@@ -1,8 +1,8 @@
 //
-//  SwiftUIView.swift
+//  TextureComponentVisualizer.swift
 //  Terra 3D
 //
-//  Created by Jiexy on 2/5/25.
+//  Created by Jiexy on 2/15/25.
 //
 
 // Code content could be improved but it is not a primary concern
@@ -13,22 +13,13 @@ import SwiftUI
 fileprivate let testSize = (height: 512, width: 512)
 
 private struct TerrainTextureVisualizer: View {
-    @State private var seed: Int32 = Int32.random(in: Int32.min..<Int32.max - 1)
 
-    var heightMap: Flat2DArray<Float> {
-        let heightGenerator: NoiseGenerator = PerlinNoiseGenerator(seed: seed)
-        let gkHeightMap = heightGenerator.generateNoiseMap()
-        return NoiseGenerator.fillMap(from: gkHeightMap, size: testSize, with: NoiseNormalizer.absNormalizer)
-    }
+    @State var heightMap: Flat2DArray<Float> = TerrainMapComponent(height: testSize.height, width: testSize.width).heightMap
     var tempMap: Flat2DArray<Float> {
-        let tempGenerator: NoiseGenerator = RidgedNoiseGenerator(frequency: 2, octaveCount: 6, lacunarity: 2, seed: seed + 1)
-        let gkTempMap = tempGenerator.generateNoiseMap()
-        return NoiseGenerator.fillMap(from: gkTempMap, scaleBy: 2, size: testSize, with: NoiseNormalizer.zeroToOneNormalizer)
+        TemperatureComponent(height: testSize.height, width: testSize.width, heightMap: self.heightMap).temperatureMap
     }
     var humidityMap: Flat2DArray<Float> {
-        let humidityGenerator: NoiseGenerator = BillowNoiseGenerator(seed: seed + 2)
-        let gkHumidityMap = humidityGenerator.generateNoiseMap()
-        return NoiseGenerator.fillMap(from: gkHumidityMap, scaleBy: 4, size: testSize, with: NoiseNormalizer.zeroToOneNormalizer(normalize:))
+        HumidityComponent(height: testSize.height, width: testSize.width, heightMap: self.heightMap).humidityMap
     }
     
     var body: some View {
@@ -42,7 +33,7 @@ private struct TerrainTextureVisualizer: View {
                 .resizable()
                 .frame(width: 600, height: 600)
             Button {
-                seed = Int32.random(in: Int32.min...Int32.max)
+                self.heightMap = TerrainMapComponent(height: testSize.height, width: testSize.width).heightMap
             } label: {
                 Text("Generate New Texture")
                     .font(.headline)

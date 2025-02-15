@@ -8,6 +8,7 @@
 import CoreGraphics
 import SwiftUI
 import Accelerate
+import Foundation
 
 struct TerrainTextureGenerator {
     
@@ -31,21 +32,22 @@ struct TerrainTextureGenerator {
         var colorMap = Flat2DArray<UInt8>(
             repeating:  UInt8(0), height: Int(size.height), width: Int(size.width) * numChannels
         )
-        for i in 0..<heightMap.count {
-            let index = i * numChannels
-            let simdColor = BiomeConfig.getBiomeColor(height: heightMap[i],
-                                                      temperature: temperatureMap[i],
-                                                      humidity: humidityMap[i]
-            )
-            colorMap[index] = simdColor.x
-            colorMap[index + 1] = simdColor.y
-            colorMap[index + 2] = simdColor.z
-            colorMap[index + 3] = simdColor.w
+        
+        DispatchQueue.concurrentPerform(iterations: heightMap.count) { i in
+                let index = i * numChannels
+                let simdColor = BiomeConfig.getBiomeColor(height: heightMap[i],
+                                                          temperature: temperatureMap[i],
+                                                          humidity: humidityMap[i]
+                )
+                colorMap[index] = simdColor.x
+                colorMap[index + 1] = simdColor.y
+                colorMap[index + 2] = simdColor.z
+                colorMap[index + 3] = simdColor.w
         }
         return colorMap
     }
     
-    static func generateImage(colorMap: Flat2DArray<UInt8>, size: CGSize, blurRadius: Int = 1) -> UIImage? {
+    private static func generateCGImage(colorMap: Flat2DArray<UInt8>, size: CGSize, blurRadius: Int = 1) -> CGImage?{
         let sourceBuffer = vImage.PixelBuffer(pixelValues: colorMap.array, size: vImage.Size(exactly: size) ?? vImage.Size(width: Int(size.width), height: Int(size.height)), pixelFormat: vImage.Interleaved8x4.self)
         // to potentially smooth out transitions
         let destinationBuffer = sourceBuffer.tentConvolved(kernelSize: vImage.Size(width: blurRadius, height: blurRadius), edgeMode: .extend)
@@ -58,6 +60,11 @@ struct TerrainTextureGenerator {
         )!) else {
             return nil
         }
+        return cgImage
+    }
+    
+    static func generateImage(colorMap: Flat2DArray<UInt8>, size: CGSize, blurRadius: Int = 1) -> UIImage? {
+        let cgImage = TerrainTextureGenerator.generateCGImage(colorMap: colorMap, size: size, blurRadius: blurRadius)!
         return UIImage(cgImage: cgImage)
     }
     
@@ -69,5 +76,15 @@ struct TerrainTextureGenerator {
     ) -> UIImage? {
         let colorMap = generateTextureMap(heightMap: heightMap, temperatureMap: temperatureMap, humidityMap: humidityMap, size: size)
         return generateImage(colorMap: colorMap, size: size, blurRadius: blurRadius)
+    }
+    
+    static func generateCGTextureImage(heightMap: Flat2DArray<Float>,
+                                  temperatureMap: Flat2DArray<Float>,
+                                  humidityMap: Flat2DArray<Float>,
+                                  size: CGSize,
+                                  blurRadius: Int = 1
+    ) -> CGImage? {
+        let colorMap = generateTextureMap(heightMap: heightMap, temperatureMap: temperatureMap, humidityMap: humidityMap, size: size)
+        return generateCGImage(colorMap: colorMap, size: size, blurRadius: blurRadius)
     }
 }

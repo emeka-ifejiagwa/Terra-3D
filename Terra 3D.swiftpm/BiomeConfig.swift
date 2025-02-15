@@ -50,11 +50,11 @@ enum Temperature: CaseIterable, Equatable {
     case freezing, cold, moderate, warm, hot
     
     private enum TempBoundary {
-        static let freezingStart = Float(0) // Not used in init but here as a good reference for ideal start
-        static let coldStart = Float(0.15)
-        static let moderateStart = Float(0.3)
-        static let warmStart = Float(0.6)
-        static let hotStart = Float(0.8)
+        static let freezingStart = Float(-10) // Not used in init but here as a good reference for ideal start
+        static let coldStart = Float(-3)
+        static let moderateStart = Float(10)
+        static let warmStart = Float(20)
+        static let hotStart = Float(32)
     }
     
     init(_ value: Float) {
@@ -79,13 +79,14 @@ enum Altitude: CaseIterable, Equatable {
      Observation: Using PerlinNoiseGenerator and absNormalizer causes much more oceans than
      the start for all oceans may represent
      */
+    // TODO: Adjust using scale because RealityKit is in meters
     private enum AltBoundary {
         static let deepStart = Float(0) // Not used in init but here as a good reference for ideal start
         static let shallowStart = Float(0.1)
         static let beachStart = Float(0.15)
         static let landStart = Float(0.225)
         static let mountainStart = Float(0.75)
-        static let peakStart = Float(0.95)
+        static let peakStart = Float(0.9)
     }
     
     init(_ value: Float) {
@@ -111,9 +112,9 @@ enum Humidity: CaseIterable, Equatable {
     
     private enum HConstant {
         static let lowStart = Float(0) // Not used in init but here as a good reference for ideal start
-        static let normalStart = Float(0.15)
-        static let highStart = Float(0.5)
-        static let veryHighStart = Float(0.75)
+        static let normalStart = Float(60)
+        static let highStart = Float(200)
+        static let veryHighStart = Float(350)
     }
     
     init(_ value: Float) {
@@ -183,7 +184,7 @@ struct BiomeConfig {
             }
             return .regularMountain
         case .peak: // independent of humidity
-            if temperature == .freezing{
+            if temperature == .freezing || temperature == .cold{
                 return .snowCappedPeak
             }
             return .iceMountain

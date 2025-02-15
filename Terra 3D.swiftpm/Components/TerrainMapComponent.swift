@@ -21,7 +21,7 @@ struct TerrainMapComponent: Component {
     let fallOffGenerator: FallOffGenerator
 //    var meshResource
     
-    let heightNormalizer: NormalizerFunction = { value in
+    private static let heightNormalizer: NormalizerFunction = { value in
         return NoiseNormalizer.noiseSmoothStepNormalizer(value)
     }
     
@@ -29,14 +29,10 @@ struct TerrainMapComponent: Component {
         // TODO: Remove if unnecessary
         self.terrainSize = CGSizeInt(height: height, width: width)
         
-        /// The x and z components correspond to the indices of the terrain height map. Therefore, if the height map is of size 256 x 256,
-        /// the AR terrain would be 256 meters by 256 meters which is too large. This is why the scale vector is needed
-        /// The y coordinate spans 0 to 1 meters (normalized) or -1 to 1 meters unnormalized
-        let scaleVector = SIMD3<Float>(x: 1/Float(width) , y: 0.75, z: 1/Float(height))
-        
         let heightGenerator = PerlinNoiseGenerator(seed: Int32.random(in: Int32.min...Int32.max))
+//        let heightGenerator = PerlinNoiseGenerator(seed: 0)
         let gkHeightMap = heightGenerator.generateNoiseMap()
-        let interMediateHeightMap =  NoiseGenerator.fillMap(from: gkHeightMap, scaleBy: 1, size: (height: height, width: width), with: self.heightNormalizer)
+        let interMediateHeightMap =  NoiseGenerator.fillMap(from: gkHeightMap, scaleBy: 1, size: (height: height, width: width), with: TerrainMapComponent.heightNormalizer)
         // apply fall off map to ease the edges
         self.fallOffGenerator = FallOffGenerator(height: height, width: width, fallOffStart: 0, fallOffEnd: 0.75)
         self.heightMap = fallOffGenerator.applyFallOff(to: interMediateHeightMap)
@@ -50,10 +46,17 @@ struct TerrainMapComponent: Component {
         var triangleIndex = 0
         var vertexIndex = 0 // helps us simplify the index to add the current vertex
         
-        // because x and z both start at 0 and move in the positive direction, the final mesh is not centered
+        // because x and z start at 0 and move in the positive direction, the final mesh is not centered
         let xOffset: Float = -Float(width/2)
         let zOffSet: Float = -Float(height/2)
-        // maybe center at the origin
+        
+        /// The x and z components correspond to the indices of the terrain height map. Therefore, if the height map is of size 256 x 256,
+        /// the AR terrain would be 256 meters by 256 meters which is too large. This is why the scale vector is needed
+        /// The y coordinate spans 0 to 1 meters (normalized) or -1 to 1 meters unnormalized
+        let scaleVector = SIMD3<Float>(x: 1/Float(width) , y: 0.6, z: 1/Float(height))
+        
+        // for UV mapping
+        var uvMap = Array(repeating: SIMD2<Float>.zero, count: numVertices)
         for row in 0..<height {
             for col in 0..<width {
                 // calculate indices
@@ -62,7 +65,9 @@ struct TerrainMapComponent: Component {
                 let bottomLeft = UInt32(vertexIndex + width)
                 let bottomRight = bottomLeft + 1
                 // add the vertices with reality kit coordinates xzy where y is axis of gravity
-                vertices[vertexIndex] = SIMD3<Float>(Float(col) + xOffset, heightMap[row, col], Float(row) + zOffSet) * scaleVector
+                vertices[vertexIndex] = SIMD3<Float>(Float(col) + xOffset, pow(heightMap[row, col], 4.5), Float(row) + zOffSet) * scaleVector
+                // calculate uv map position
+                uvMap[vertexIndex] = SIMD2<Float>(Float(row)/Float(height), Float(col)/Float(width))
                 // The commented out code is for voxel representation
 //                vertices[vertexIndex] = SIMD3<Float>(Float(col) + xOffset, Float(Int(heightMap[row, col] * 100)/5)/10, Float(row) + zOffSet) * scaleVector
                 
@@ -82,9 +87,9 @@ struct TerrainMapComponent: Component {
         }
         descriptor.positions = MeshBuffers.Positions(vertices)
         descriptor.primitives = .triangles(indices)
+        descriptor.textureCoordinates = MeshBuffers.TextureCoordinates(uvMap)
         self.descriptor = descriptor
         self.terrainMesh = try! MeshResource.generate(from: [descriptor])
     }
     
-    let waterMaterial = SimpleMaterial(color: .lightGray, roughness: 1, isMetallic: false)
 }

@@ -12,42 +12,54 @@ import Accelerate
 /// This struct stores information about the humidity of the terrain
 /// Note that areas around oceans are more humid than other areas.
 /// To simulate this, use a blur kernel to diffuse the values to its neighbors.
-/// Humidity values range from 0 to 400
+/// Humidity values range from 0 to 500
 struct HumidityComponent: Component {
     var humidityMap: Flat2DArray<Float>
     
     private static let minHumidity: Float = 0
-    private static let maxHumidity: Float = 400
+    private static let maxHumidity: Float = 500
     
-    private static let deepOceanHumidity: Float = 400
+    private static let deepOceanHumidity: Float = 500
     private static let shallowOceanHumidity: Float = 250
     
-    private static let blurRadius: Int = 64
+    private static let blurRadius: Int = 32
     
     private static let humidityNormalizer: NormalizerFunction = { value in
         return NoiseNormalizer.noiseSmoothStepNormalizer(value) * (HumidityComponent.maxHumidity - HumidityComponent.minHumidity) + HumidityComponent.minHumidity
     }
     
     init(height: Int, width: Int, heightMap: Flat2DArray<Float>){
-        let humidityGenerator: NoiseGenerator = PerlinNoiseGenerator(seed: Int32.random(in: Int32.min...Int32.max))
+        let humidityGenerator: NoiseGenerator = BillowNoiseGenerator(frequency: 1,
+                                                                     octaveCount: 8,
+                                                                     persistence: 0.1,
+                                                                     lacunarity: 4,
+                                                                     seed: Int32.random(in: Int32.min...Int32.max))
         let gkHumidityMap = humidityGenerator.generateNoiseMap()
         let intermediateHumidityMap = NoiseGenerator.fillMap(from: gkHumidityMap, scaleBy: 1, size: CGSizeInt(height: height, width: width), with: HumidityComponent.humidityNormalizer)
+        
+        // since the terrain closer to the middle is hotter, and humidity is related to temperature
+        // use a fall off map to reduce the humidity in those areas
+        let tempAccountedFallOffMapGenerator = FallOffGenerator(height: height, width: width)
+        let tempAccountedFallOffMap = tempAccountedFallOffMapGenerator.applyFallOff(to: intermediateHumidityMap, by: .multiplication)
+        // account for temperature change due to height
         var unDiffusedMap = Flat2DArray(repeating: Float(0), height: height, width: width)
         
-        // to reduce overhead, parallelize the work done on each row
+        // to reduce overhead, parallelize the work done on each row rather than on each cell
         DispatchQueue.concurrentPerform(iterations: height) { row in
             for col in 0..<width {
                 let height = Altitude(heightMap[row, col])
+                let humidity = tempAccountedFallOffMap[row, col]
                 if height == .deep {
-                    unDiffusedMap[row, col] = HumidityComponent.deepOceanHumidity
+                    unDiffusedMap[row, col] = humidity + HumidityComponent.deepOceanHumidity
                 } else if height == .shallow {
-                    unDiffusedMap[row, col] = HumidityComponent.shallowOceanHumidity
+                    unDiffusedMap[row, col] = humidity + HumidityComponent.shallowOceanHumidity
                 } else {
-                    unDiffusedMap[row, col] = intermediateHumidityMap[row, col]
+                    unDiffusedMap[row, col] = humidity
                 }
             }
         }
         
+        // TODO: Make into a function as this is used in the Temperature component too
         // blur to affect neighbors
         let sourceBuffer = vImage.PixelBuffer(pixelValues: unDiffusedMap.array, size: vImage.Size(width: width, height: height), pixelFormat: vImage.PlanarF.self)
         let destinationBuffer = vImage.PixelBuffer(width: width, height: height, pixelFormat: vImage.PlanarF.self)

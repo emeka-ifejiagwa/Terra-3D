@@ -13,13 +13,12 @@ import RealityKit
 /// RealityKit coordinate system is really important in understanding and debugging this code
 /// z if towards the user, x in to the users' right, y is parallel to gravity
 /// Therefore the row represent Z-coordinates and the columns represent X-coordinates
-struct TerrainMapComponent: Component {
+struct HeightComponent: Component {
     var heightMap: Flat2DArray<Float>
     var descriptor: MeshDescriptor
     var terrainMesh: MeshResource
     var terrainSize: CGSizeInt
     let fallOffGenerator: FallOffGenerator
-//    var meshResource
     
     private static let heightNormalizer: NormalizerFunction = { value in
         return NoiseNormalizer.noiseSmoothStepNormalizer(value)
@@ -29,10 +28,13 @@ struct TerrainMapComponent: Component {
         // TODO: Remove if unnecessary
         self.terrainSize = CGSizeInt(height: height, width: width)
         
-        let heightGenerator = PerlinNoiseGenerator(seed: Int32.random(in: Int32.min...Int32.max))
-//        let heightGenerator = PerlinNoiseGenerator(seed: 0)
+        let heightGenerator = BillowNoiseGenerator(frequency: 2,
+                                                   persistence: 0.25,
+                                                   lacunarity: 4,
+                                                   seed: Int32.random(in: Int32.min...Int32.max))
+        //        let heightGenerator = PerlinNoiseGenerator(seed: 0)
         let gkHeightMap = heightGenerator.generateNoiseMap()
-        let interMediateHeightMap =  NoiseGenerator.fillMap(from: gkHeightMap, scaleBy: 1, size: (height: height, width: width), with: TerrainMapComponent.heightNormalizer)
+        let interMediateHeightMap =  NoiseGenerator.fillMap(from: gkHeightMap, scaleBy: 0.5, size: (height: height, width: width), with: HeightComponent.heightNormalizer)
         // apply fall off map to ease the edges
         self.fallOffGenerator = FallOffGenerator(height: height, width: width, fallOffStart: 0, fallOffEnd: 0.75)
         self.heightMap = fallOffGenerator.applyFallOff(to: interMediateHeightMap)
@@ -53,10 +55,16 @@ struct TerrainMapComponent: Component {
         /// The x and z components correspond to the indices of the terrain height map. Therefore, if the height map is of size 256 x 256,
         /// the AR terrain would be 256 meters by 256 meters which is too large. This is why the scale vector is needed
         /// The y coordinate spans 0 to 1 meters (normalized) or -1 to 1 meters unnormalized
-        let scaleVector = SIMD3<Float>(x: 1/Float(width) , y: 0.6, z: 1/Float(height))
+        let scaleVector = SIMD3<Float>(x: 1/Float(width) , y: 0.7, z: 1/Float(height))
         
         // for UV mapping
         var uvMap = Array(repeating: SIMD2<Float>.zero, count: numVertices)
+        
+        // used to control the height rate depending on the biome
+        let adjustedHeightVal: (Float) -> Float = { heightVal in
+            pow(heightVal, 2.8)
+        }
+        
         for row in 0..<height {
             for col in 0..<width {
                 // calculate indices
@@ -65,11 +73,12 @@ struct TerrainMapComponent: Component {
                 let bottomLeft = UInt32(vertexIndex + width)
                 let bottomRight = bottomLeft + 1
                 // add the vertices with reality kit coordinates xzy where y is axis of gravity
-                vertices[vertexIndex] = SIMD3<Float>(Float(col) + xOffset, pow(heightMap[row, col], 4.5), Float(row) + zOffSet) * scaleVector
+                vertices[vertexIndex] = SIMD3<Float>(Float(col) + xOffset,  adjustedHeightVal(heightMap[row, col]), Float(row) + zOffSet) * scaleVector
                 // calculate uv map position
                 uvMap[vertexIndex] = SIMD2<Float>(Float(row)/Float(height), Float(col)/Float(width))
                 // The commented out code is for voxel representation
-//                vertices[vertexIndex] = SIMD3<Float>(Float(col) + xOffset, Float(Int(heightMap[row, col] * 100)/5)/10, Float(row) + zOffSet) * scaleVector
+                // See https://www.redblobgames.com/maps/terrain-from-noise/#terraces
+                // vertices[vertexIndex] = SIMD3<Float>(Float(col) + xOffset, Float(Int(heightMap[row, col] * 100)/5)/10, Float(row) + zOffSet) * scaleVector
                 
                 // add triangle indices
                 if row < height - 1 && col < width - 1 {

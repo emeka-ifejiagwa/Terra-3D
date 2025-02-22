@@ -26,24 +26,24 @@ enum Biome: Equatable {
 }
 
 let BiomeColorMap : [Biome : SIMD_RGBA] = [
-    .snowCappedPeak : SIMD_RGBA(x: 255, y: 255, z: 255, w: 255),
-    .tundra : SIMD_RGBA(x: 214, y: 255, z: 255, w: 255),
-    .coldBeach : SIMD_RGBA(x: 250, y: 240, z: 192, w: 255),
-    .beach : SIMD_RGBA(x: 250, y: 222, z: 85, w: 255),
-    .iceMountain : SIMD_RGBA(x: 160, y: 160, z: 160, w: 255),
+    .snowCappedPeak : SIMD_RGBA(x: 220, y: 220, z: 220, w: 255),
+    .tundra : SIMD_RGBA(x: 149, y: 174, z: 210, w: 255),
+    .coldBeach : SIMD_RGBA(x: 249, y: 231, z: 199, w: 255),
+    .beach : SIMD_RGBA(x: 249, y: 231, z: 199, w: 255),
+    .iceMountain : SIMD_RGBA(x: 178, y: 178, z: 178, w: 255),
     .regularMountain : SIMD_RGBA(x: 96, y: 96, z: 96, w: 255),
-    .desert : SIMD_RGBA(x: 255, y: 188, z: 64, w: 255),
-    .savanna : SIMD_RGBA(x: 189, y: 178, z: 95, w: 255),
+    .desert : SIMD_RGBA(x: 214, y: 169, z: 114, w: 255),
+    .savanna : SIMD_RGBA(x: 155, y: 149, z: 14, w: 255),
     .deepOcean : SIMD_RGBA(x: 0, y: 0, z: 112, w: 255),
     .shallowOcean : SIMD_RGBA(x: 48, y: 48, z: 175, w: 255),
     .temperateForest : SIMD_RGBA(x: 98, y: 139, z: 23, w: 255),
 //    .temperateForest : SIMD_RGBA(x: 48, y: 116, z: 68, w: 255),
-    .tropicalForest : SIMD_RGBA(x: 98, y: 139, z: 23, w: 255),
+    .tropicalForest : SIMD_RGBA(x: 6, y: 104, z: 6, w: 255),
 //    .tropicalForest : SIMD_RGBA(x: 5, y: 102, z: 33, w: 255),
-    .borealForest : SIMD_RGBA(x: 98, y: 139, z: 23, w: 255),
+    .borealForest : SIMD_RGBA(x: 0, y: 87, z: 78, w: 255),
 //    .borealForest : SIMD_RGBA(x: 11, y: 102, z: 89, w: 255),
 //    .grassLand : SIMD_RGBA(x: 98, y: 139, z: 23, w: 255),
-    .grassLand : SIMD_RGBA(x: 141, y: 179, z: 96, w: 255),
+    .grassLand : SIMD_RGBA(x: 193, y: 189, z: 62, w: 255),
 ]
 
 enum Temperature: CaseIterable, Equatable {
@@ -82,10 +82,10 @@ enum Altitude: CaseIterable, Equatable {
     // TODO: Adjust using scale because RealityKit is in meters
     private enum AltBoundary {
         static let deepStart = Float(0) // Not used in init but here as a good reference for ideal start
-        static let shallowStart = Float(0.1)
-        static let beachStart = Float(0.15)
-        static let landStart = Float(0.225)
-        static let mountainStart = Float(0.75)
+        static let shallowStart = Float(0.025)
+        static let beachStart = Float(0.05)
+        static let landStart = Float(0.075)
+        static let mountainStart = Float(0.7)
         static let peakStart = Float(0.9)
     }
     

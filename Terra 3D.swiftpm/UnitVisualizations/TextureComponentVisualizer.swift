@@ -14,7 +14,7 @@ fileprivate let testSize = (height: 512, width: 512)
 
 private struct TerrainTextureVisualizer: View {
 
-    @State var heightMap: Flat2DArray<Float> = TerrainMapComponent(height: testSize.height, width: testSize.width).heightMap
+    @State var heightMap: Flat2DArray<Float> = HeightComponent(height: testSize.height, width: testSize.width).heightMap
     var tempMap: Flat2DArray<Float> {
         TemperatureComponent(height: testSize.height, width: testSize.width, heightMap: self.heightMap).temperatureMap
     }
@@ -33,7 +33,7 @@ private struct TerrainTextureVisualizer: View {
                 .resizable()
                 .frame(width: 600, height: 600)
             Button {
-                self.heightMap = TerrainMapComponent(height: testSize.height, width: testSize.width).heightMap
+                self.heightMap = HeightComponent(height: testSize.height, width: testSize.width).heightMap
             } label: {
                 Text("Generate New Texture")
                     .font(.headline)

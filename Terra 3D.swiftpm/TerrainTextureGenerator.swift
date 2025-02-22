@@ -53,7 +53,7 @@ struct TerrainTextureGenerator {
         let destinationBuffer = sourceBuffer.tentConvolved(kernelSize: vImage.Size(width: blurRadius, height: blurRadius), edgeMode: .extend)
         
         let colorSpace = CGColorSpaceCreateDeviceRGB()
-        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue) // RGBA not ARGB
+        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue) // RGBA not ARGB
         
         guard let cgImage = destinationBuffer.makeCGImage(cgImageFormat: vImage_CGImageFormat(
             bitsPerComponent: 8, bitsPerPixel: 32, colorSpace: colorSpace, bitmapInfo: bitmapInfo

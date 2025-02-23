@@ -17,8 +17,8 @@ struct HeightComponent: Component {
     var heightMap: Flat2DArray<Float>
     var descriptor: MeshDescriptor
     var terrainMesh: MeshResource
+    
     var terrainSize: CGSizeInt
-    let fallOffGenerator: FallOffGenerator
     
     private static let heightNormalizer: NormalizerFunction = { value in
         return NoiseNormalizer.noiseSmoothStepNormalizer(value)
@@ -28,18 +28,21 @@ struct HeightComponent: Component {
         // TODO: Remove if unnecessary
         self.terrainSize = CGSizeInt(height: height, width: width)
         
-        let heightGenerator = BillowNoiseGenerator(frequency: 2,
-                                                   persistence: 0.25,
-                                                   lacunarity: 4,
-                                                   seed: Int32.random(in: Int32.min...Int32.max))
-        //        let heightGenerator = PerlinNoiseGenerator(seed: 0)
-        let gkHeightMap = heightGenerator.generateNoiseMap()
-        let interMediateHeightMap =  NoiseGenerator.fillMap(from: gkHeightMap, scaleBy: 0.5, size: (height: height, width: width), with: HeightComponent.heightNormalizer)
-        // apply fall off map to ease the edges
-        self.fallOffGenerator = FallOffGenerator(height: height, width: width, fallOffStart: 0, fallOffEnd: 0.75)
-        self.heightMap = fallOffGenerator.applyFallOff(to: interMediateHeightMap)
+        self.heightMap = HeightComponent.generateHeightMap(height: height, width: width)
+        self.descriptor = HeightComponent.buildDescriptor(height: height, width: width, heightMap: self.heightMap)
+        self.terrainMesh = try! MeshResource.generate(from: [self.descriptor])    }
+    
+    // used to update system when we do not need to regenerate initial height map
+    init(height: Int, width: Int, heightMap: Flat2DArray<Float>){
+        precondition((height * width) == heightMap.count, "Height map size does not match terrain size")
+        self.terrainSize = CGSizeInt(height: height, width: width)
+        self.heightMap = heightMap
+        self.descriptor = HeightComponent.buildDescriptor(height: height, width: width, heightMap: self.heightMap)
+        self.terrainMesh = try! MeshResource.generate(from: [self.descriptor])
+    }
+    
+    static func buildDescriptor(height: Int, width: Int, heightMap: Flat2DArray<Float>) -> MeshDescriptor{
         var descriptor = MeshDescriptor(name: "Height Mesh")
-        
         // add vertices and indices
         let numVertices = height * width
         let numTriangles = (height - 1) * (width - 1) * 6
@@ -97,8 +100,20 @@ struct HeightComponent: Component {
         descriptor.positions = MeshBuffers.Positions(vertices)
         descriptor.primitives = .triangles(indices)
         descriptor.textureCoordinates = MeshBuffers.TextureCoordinates(uvMap)
-        self.descriptor = descriptor
-        self.terrainMesh = try! MeshResource.generate(from: [descriptor])
+        return descriptor
+    }
+    
+    static func generateHeightMap(height: Int, width: Int) -> Flat2DArray<Float> {
+//        let heightGenerator = BillowNoiseGenerator(frequency: 2,
+//                                                   persistence: 0.25,
+//                                                   lacunarity: 4,
+//                                                   seed: Int32.random(in: Int32.min...Int32.max))
+        let heightGenerator = ConstantNoiseGenerator(value: 1)
+        let gkHeightMap = heightGenerator.generateNoiseMap()
+        let interMediateHeightMap =  NoiseGenerator.fillMap(from: gkHeightMap, scaleBy: 0.5, size: (height: height, width: width), with: HeightComponent.heightNormalizer)
+        // apply fall off map to ease the edges
+        let fallOffGenerator = FallOffGenerator(height: height, width: width, fallOffStart: 0, fallOffEnd: 0.75)
+        return fallOffGenerator.applyFallOff(to: interMediateHeightMap)
     }
     
 }

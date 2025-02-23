@@ -7,8 +7,8 @@
 
 import RealityKit
 
-let MAP_WIDTH = 512
-let MAP_HEIGHT = 512
+let MAP_WIDTH = 256
+let MAP_HEIGHT = 256
 
 class TerrainMesh: Entity, HasModel {
     

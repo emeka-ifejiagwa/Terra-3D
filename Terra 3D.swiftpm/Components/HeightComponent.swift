@@ -58,7 +58,7 @@ struct HeightComponent: Component {
         /// The x and z components correspond to the indices of the terrain height map. Therefore, if the height map is of size 256 x 256,
         /// the AR terrain would be 256 meters by 256 meters which is too large. This is why the scale vector is needed
         /// The y coordinate spans 0 to 1 meters (normalized) or -1 to 1 meters unnormalized
-        let scaleVector = SIMD3<Float>(x: 1/Float(width) , y: 0.7, z: 1/Float(height))
+        let scaleVector = SIMD3<Float>(x: 0.65/Float(width) , y: 0.5, z: 0.65/Float(height))
         
         // for UV mapping
         var uvMap = Array(repeating: SIMD2<Float>.zero, count: numVertices)
@@ -104,15 +104,15 @@ struct HeightComponent: Component {
     }
     
     static func generateHeightMap(height: Int, width: Int) -> Flat2DArray<Float> {
-//        let heightGenerator = BillowNoiseGenerator(frequency: 2,
-//                                                   persistence: 0.25,
-//                                                   lacunarity: 4,
-//                                                   seed: Int32.random(in: Int32.min...Int32.max))
-        let heightGenerator = ConstantNoiseGenerator(value: 1)
+        let heightGenerator = BillowNoiseGenerator(frequency: 2,
+                                                   persistence: 0.25,
+                                                   lacunarity: 4,
+                                                   seed: Int32.random(in: Int32.min...Int32.max))
+//        let heightGenerator = ConstantNoiseGenerator(value: 1)
         let gkHeightMap = heightGenerator.generateNoiseMap()
         let interMediateHeightMap =  NoiseGenerator.fillMap(from: gkHeightMap, scaleBy: 0.5, size: (height: height, width: width), with: HeightComponent.heightNormalizer)
         // apply fall off map to ease the edges
-        let fallOffGenerator = FallOffGenerator(height: height, width: width, fallOffStart: 0, fallOffEnd: 0.75)
+        let fallOffGenerator = FallOffGenerator(height: height, width: width, fallOffStart: 0.1, fallOffEnd: 0.85)
         return fallOffGenerator.applyFallOff(to: interMediateHeightMap)
     }
     

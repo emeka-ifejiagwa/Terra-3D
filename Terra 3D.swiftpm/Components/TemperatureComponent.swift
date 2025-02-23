@@ -32,6 +32,10 @@ struct TemperatureComponent: Component {
     private static let lapseRate: Float = 20.0 // highest peaks would be about -lapseRateºC
     
     private static let blurRadius: Int = 50
+    
+    // simulation parameters
+    var globalTemperatureChange = TempParams.baseGlobalTempChange
+    
     var temperatureMap: Flat2DArray<Float>
     private static let temperatureNormalizer: NormalizerFunction = { value in
         let normalizedTemp = NoiseNormalizer.noiseSmoothStepNormalizer(value)

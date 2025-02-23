@@ -12,7 +12,6 @@ let MAP_HEIGHT = 256
 
 class TerrainMesh: Entity, HasModel {
     
-    
     required init() {
         super.init()
         self.components[HeightComponent.self] = HeightComponent(
@@ -35,6 +34,11 @@ class TerrainMesh: Entity, HasModel {
             temperatureMap: self.components[TemperatureComponent.self]!.temperatureMap,
             humidityMap: self.components[HumidityComponent.self]!.humidityMap
         )
+        self.components[GreenHouseComponent.self] = GreenHouseComponent()
+        self.components[HumanComponent.self] = HumanComponent()
+        self.components[PollutionComponent.self] = PollutionComponent()
+        self.components[SequestrationComponent.self] = SequestrationComponent()
+        self.components[VegetationComponent.self] = VegetationComponent()
         
         if let component = self.components[HeightComponent.self] {
             let terrainTextureComponent = self.components[TerrainTextureComponent.self]!

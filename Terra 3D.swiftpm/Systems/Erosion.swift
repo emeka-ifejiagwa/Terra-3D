@@ -23,9 +23,7 @@ class Erosion: System {
     // MARK: modify evaporation to use temperature
     private var evaporationRate: Float = 0.001
     
-    private static let query = EntityQuery(where: .has(HeightComponent.self)
-                                           && .has(TemperatureComponent.self)
-                                           && .has(HumidityComponent.self))
+    private static let query = EntityQuery(where: .has(HeightComponent.self))
     required init(scene: Scene) {}
     
     func update(context: SceneUpdateContext) {

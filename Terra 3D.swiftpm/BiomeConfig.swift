@@ -204,4 +204,8 @@ struct BiomeConfig {
         return getBiomeColor(biome: biome)
     }
     
+    static func isVegetationBiome(height: Float, temperature: Float, humidity: Float) -> Bool {
+        let biome = getBiomeType(height: height, temperature: temperature, humidity: humidity)
+        return biome == .borealForest || biome == .grassLand || biome == .savanna || biome == .tropicalForest || biome == .temperateForest
+    }
 }

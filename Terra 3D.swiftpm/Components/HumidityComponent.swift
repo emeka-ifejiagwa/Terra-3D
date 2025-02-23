@@ -16,13 +16,16 @@ import Accelerate
 struct HumidityComponent: Component {
     var humidityMap: Flat2DArray<Float>
     
-    private static let minHumidity: Float = 0
-    private static let maxHumidity: Float = 500
+    private static let minHumidity: Float = Float(HumidityParams.minHumidity)
+    private static let maxHumidity: Float = Float(HumidityParams.maxHumidity)
     
     private static let deepOceanHumidity: Float = 500
     private static let shallowOceanHumidity: Float = 250
     
     private static let blurRadius: Int = 32
+    
+    // simulation variables
+    static var localNoiseVariation = HumidityParams.localNoiseRange
     
     private static let humidityNormalizer: NormalizerFunction = { value in
         return NoiseNormalizer.noiseSmoothStepNormalizer(value) * (HumidityComponent.maxHumidity - HumidityComponent.minHumidity) + HumidityComponent.minHumidity

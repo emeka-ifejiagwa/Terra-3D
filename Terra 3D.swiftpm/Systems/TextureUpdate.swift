@@ -9,7 +9,7 @@ import RealityKit
 
 class TextureUpdate: System {
     private var timeSinceTextureUpdate = 0.0
-    private var updateInterval = 0.5
+    private var updateInterval = SimulationConfig.updateTextureInterval
     private static let query = EntityQuery(where: .has(HeightComponent.self)
                                            && .has(TemperatureComponent.self)
                                            && .has(HumidityComponent.self)
@@ -18,15 +18,22 @@ class TextureUpdate: System {
     required init(scene: Scene) {    }
     
     func update(context: SceneUpdateContext) {
+        // update after every set milliseconds
         timeSinceTextureUpdate += context.deltaTime
         guard timeSinceTextureUpdate >= updateInterval else {return}
         timeSinceTextureUpdate = 0
+        
         let entities = context.entities(matching: TextureUpdate.query, updatingSystemWhen: .rendering)
         entities.forEach { entity in
             entity.components[TerrainTextureComponent.self] = TerrainTextureComponent(
                 height: MAP_HEIGHT, width: MAP_WIDTH,
                 heightMap: entity.components[HeightComponent.self]!.heightMap,
-                temperatureMap: entity.components[TemperatureComponent.self]!.temperatureMap, humidityMap: entity.components[HumidityComponent.self]!.humidityMap)
+                temperatureMap: entity.components[TemperatureComponent.self]!.temperatureMap,
+                humidityMap: entity.components[HumidityComponent.self]!.humidityMap)
+            
+            // update texture dynamically
+            let terrainTextureComponent = entity.components[TerrainTextureComponent.self]!
+            entity.components[ModelComponent.self]?.materials = [terrainTextureComponent.material]
         }
     }
 }

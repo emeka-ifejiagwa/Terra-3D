@@ -32,6 +32,8 @@ class GreenHouseEmissions: System {
                 let updatedGlobalEmission = ghgComponent.globalEmissions + pollution.industrialEmission + pollution.landUseEmission
                 ghgComponent.globalEmissions = updatedGlobalEmission
                 ghgComponent.totalGHGConcentration += updatedGlobalEmission - sequestration.sequestrationRate
+                ghgComponent.totalGHGConcentration = max(ghgComponent.totalGHGConcentration, 1)
+//                print(ghgComponent)
                 entity.components[GreenHouseComponent.self] = ghgComponent
             }
     }

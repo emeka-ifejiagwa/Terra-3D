@@ -30,16 +30,17 @@ class HumidityUpdate: System {
                 var humidity = entity.components[HumidityComponent.self]!
                 let temperature = entity.components[TemperatureComponent.self]!
                 
-                let variation = Double.random(in: HumidityParams.localNoiseRange)
+                let variation = Double.random(in: HumidityParams.humidityReductionProbability...1)
                 let tempChangeSinceInitial = temperature.globalTemperatureChange
                 
-                // Higher temperature leads to lower humidity
-                let globalHumidity = HumidityParams.rainfallTempCouplingConstant * -tempChangeSinceInitial
-                let humidityChange = globalHumidity + variation
-                
-                var adjustedHumidity = vDSP.add(Float(humidityChange), humidity.humidityMap.array)
+                // Higher temperature leads to lower humidity, hence negative
+                let globalHumidity = -HumidityParams.rainfallTempCouplingConstant * tempChangeSinceInitial
+
+                // variation is on a per cell basis
+                var adjustedHumidity = vDSP.add(Float(globalHumidity * variation), humidity.humidityMap.array)
                 adjustedHumidity = vDSP.clip(adjustedHumidity, to: (HumidityParams.minHumidity)...HumidityParams.maxHumidity)
                 humidity.humidityMap.array = adjustedHumidity
+//                print(humidity.humidityMap[10_000])
                 // update humidity component
                 entity.components[HumidityComponent.self] = humidity
             }

@@ -25,16 +25,16 @@ class PollutionUpdate: System {
             .forEach { entity in
                 var pollution = entity.components[PollutionComponent.self]!
                 let humanComponent = entity.components[HumanComponent.self]!
-                
+
                 var industrialEmission = pollution.industrialEmission * humanComponent.urbanization * (1 - PollutionParams.pollutionDecay)
                 industrialEmission += PollutionParams.baseIndustrialEmission
-                
+                industrialEmission = max(industrialEmission, 1)
                 var landUseEmission = pollution.landUseEmission * humanComponent.population * (1 - PollutionParams.pollutionDecay) + humanComponent.pollutionPerPerson
-                landUseEmission = landUseEmission + PollutionParams.baseLandUseEmission
+                landUseEmission = max(1, landUseEmission + PollutionParams.baseLandUseEmission)
                 
-                pollution.industrialEmission = industrialEmission
-                pollution.landUseEmission = landUseEmission
-                
+                pollution.industrialEmission += log(industrialEmission)
+                pollution.landUseEmission = log(landUseEmission)
+//                print(pollution)
                 entity.components[PollutionComponent.self] = pollution
             }
     }

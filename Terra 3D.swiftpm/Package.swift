@@ -34,7 +34,8 @@ let package = Package(
             ],
             capabilities: [
                 .camera(purposeString: "Terra 3D uses your camera to detect and map your surroundings, allowing you to seamlessly integrate our environmental simulation into your real-world space")
-            ]
+            ],
+            appCategory: .simulationGames
         )
     ],
     targets: [

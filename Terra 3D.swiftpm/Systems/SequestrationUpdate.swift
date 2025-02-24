@@ -29,11 +29,12 @@ class SequestrationUpdate: System {
                 let vegetation = entity.components[VegetationComponent.self]!
                 let human = entity.components[HumanComponent.self]!
                 
-                let vegetativeSequestration = (vegetation.vegetativeCover + human.forestation) * SequestrationParams.seqPerVegetation
+                let vegetativeSequestration = (vegetation.vegetativeCover +  3 * human.forestation) * SequestrationParams.seqPerVegetation
                 // always sequestrate 10 percent of green house gas emission
                 let ghgSeq = (ghgComponent.totalGHGConcentration - GHGParams.baselineConcentration) * SequestrationParams.ghgSinkFactor
                 sequestration.sequestrationRate = SequestrationParams.baseSequestrationAmount + ghgSeq + vegetativeSequestration
                 
+//                print(vegetativeSequestration)
                 // update sequestration
                 entity.components[SequestrationComponent.self] = sequestration
             }

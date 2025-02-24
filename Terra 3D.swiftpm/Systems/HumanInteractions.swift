@@ -31,13 +31,13 @@ class HumanInteractions: System {
             
             // update population
             let population = humanComponent.population
-            let decline = 1 - HumanParams.pollutionFactor * (pollution.landUseEmission + pollution.industrialEmission)
-            - HumanParams.tempFactor * temperature.globalTemperatureChange
-            + HumanParams.vegFactor * vegetation.vegetativeCover
-            let populationChange = HumanParams.growthRate * population * (1 - population/HumanParams.carryingCapacity)
+            let decline =  -HumanParams.pollutionFactor * (pollution.landUseEmission + pollution.industrialEmission) - (population * HumanParams.deathRate)
+            - (HumanParams.tempFactor * temperature.globalTemperatureChange
+)            + (HumanParams.vegFactor * vegetation.vegetativeCover)
+            let populationChange = HumanParams.growthRate * population * (1 - population/HumanParams.carryingCapacity) + decline
             
-            humanComponent.population = max(HumanParams.minPopulation, population + populationChange + decline)
-            print(humanComponent.population)
+            humanComponent.population = max(HumanParams.minPopulation, population + populationChange)
+            print(decline)
             entity.components[HumanComponent.self] = humanComponent
         }
     }

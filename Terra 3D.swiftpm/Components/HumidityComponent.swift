@@ -24,8 +24,6 @@ struct HumidityComponent: Component {
     
     private static let blurRadius: Int = 32
     
-    // simulation variables
-    static var localNoiseVariation = HumidityParams.localNoiseRange
     
     private static let humidityNormalizer: NormalizerFunction = { value in
         return NoiseNormalizer.noiseSmoothStepNormalizer(value) * (HumidityComponent.maxHumidity - HumidityComponent.minHumidity) + HumidityComponent.minHumidity

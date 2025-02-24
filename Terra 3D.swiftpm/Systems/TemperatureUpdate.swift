@@ -32,11 +32,15 @@ class TemperatureUpdate: System {
                 
                 let tempChange = TempParams.climateSensitivity * log(ghgComponent.totalGHGConcentration/GHGParams.baseGlobalEmission)
                 temperature.globalTemperatureChange += tempChange
+                let variation = Double.random(in: -TempParams.tempReductionProbability...1)
                 // update all temperatures since global temperature has increased
-                let adjustedTempArray = vDSP.add(Float(tempChange), temperature.temperatureMap.array)
+                // the randomNess adds some variation to the general temperature change.
+                // without this, the desert looks like a pool spreading to neighbors evenly
+                // variation should be on a per cell basis
+                let adjustedTempArray = vDSP.add(Float(tempChange * variation), temperature.temperatureMap.array)
                 
                 temperature.temperatureMap.array = adjustedTempArray
-                
+//                print(temperature.globalTemperatureChange)
                 // update temperature component
                 entity.components[TemperatureComponent.self] = temperature
             }
